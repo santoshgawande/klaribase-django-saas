@@ -1,0 +1,15 @@
+[project]
+name = "klaribase"
+version = "0.1.0"
+description = "Multi-tenant Django SaaS starter"
+authors = [
+    { name = "Santosh Gawande", email = "gawandesantos@gmail.com" }
+]
+dependencies = [
+    "Django>=4.2",
+    "djangorestframework",
+    "psycopg2-binary"
+]
+
+[tool.setuptools]
+packages = ["klaribase", "accounts"]
