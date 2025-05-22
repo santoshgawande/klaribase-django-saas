@@ -88,8 +88,7 @@ Cross-Origin-Opener-Policy: same-origin
 
 ### Get api token using Curl
 ```bash
-url -i -X POST http://127.0.0.1:
-8000/api/token/ -H "Content-Type: application/json" -d '{"username":"san","password":"testpass123"}'
+curl -i -X POST http://127.0.0.1:8000/api/token/ -H "Content-Type: application/json" -d '{"username":"san","password":"testpass123"}'
 
 
 HTTP/1.1 200 OK
@@ -180,3 +179,12 @@ pre-commit install
 pre-commit installed at .git/hooks/pre-commit
 ```
 This sets up the hook in .git/hooks/pre-commit.
+
+
+### Logout using Curl
+```bash
+curl -i -X POST http://127.0.0.1:8000/api/accounts/logout/ \
+  -H "Authorization: Bearer <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{"refresh": "<refresh_token>"}'
+```
