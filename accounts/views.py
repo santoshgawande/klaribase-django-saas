@@ -124,8 +124,9 @@ class ForgotPasswordView(APIView):
         send_mail(
             subject="Klaribase Password Reset",
             message=f"Hi {user.username},\n\nClick to reset your password: {reset_url}",
+            # from_email="gawandesantos@gmail.com",  # or Gmail will reject it
             from_email="noreply@klaribase.com",
-            recipient_list=[email],
+            recipient_list=[user.email],
             fail_silently=False,
         )
 
