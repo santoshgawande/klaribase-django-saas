@@ -11,25 +11,5 @@ dependencies = [
     "psycopg2-binary"
 ]
 
-[project.optional-dependencies]
-dev = [
-    "black>=24.0.0",
-    "pre-commit"
-]
-
-[tool.black]
-line-length = 88
-target-version = ["py311"]
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.git
-  | \.venv
-  | build
-  | dist
-  | migrations
-)/
-'''
-
 [tool.setuptools]
 packages = ["klaribase", "accounts"]
