@@ -173,3 +173,8 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+## Email Backend for Development
+## This does not send real emails - It just prints them to terminal
+## Use this for testing locally only
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

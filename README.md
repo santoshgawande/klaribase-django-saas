@@ -1,5 +1,6 @@
 # klaribase-django-saas  -  Multi-Tenant Platform
 
+
 ## **1. Accounts**
 
 ### Create Accounts app
@@ -180,11 +181,43 @@ pre-commit installed at .git/hooks/pre-commit
 ```
 This sets up the hook in .git/hooks/pre-commit.
 
-
-### Logout using Curl
+#### Login using Curl
+```bash
+curl -i -X POST http://127.0.0.1:8000/api/accounts/login/ -H "Content-Type: application/json" -d '{"username":"san","password":"testpass123"}'
+```
+#### Logout using Curl
 ```bash
 curl -i -X POST http://127.0.0.1:8000/api/accounts/logout/ \
   -H "Authorization: Bearer <access_token>" \
   -H "Content-Type: application/json" \
   -d '{"refresh": "<refresh_token>"}'
+```
+
+#### Get authenticated User profile
+```bash
+curl -i -X GET http://127.0.0.1:8000/api/accounts/me/ \
+  -H "Authorization: Bearer <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{"refresh": "<refresh_token>"}'
+```
+
+#### change-password
+```bash
+curl -i -X POST http://127.0.0.1:8000/api/accounts/change-password/ \
+  -H "Authorization: Bearer <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "old_password":"testpass1234",
+    "new_password":"testpass123"
+}'
+```
+
+#### Forgot password
+```bash
+curl -i -X POST http://127.0.0.1:8000/api/accounts/forgot-password/ \
+  -H "Authorization: Bearer <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+      "email":"san@example.com"
+  }'
 ```

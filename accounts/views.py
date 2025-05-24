@@ -1,10 +1,14 @@
+from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.password_validation import validate_password
+from django.core.mail import send_mail
+from django.urls import reverse
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, UntypedToken
 
 from .models import CustomUser
 from .serializers import LoginSerializer, UserSerializer
@@ -94,4 +98,59 @@ class ChangePasswordView(APIView):
         user.save()
         return Response(
             {"detail": "Password updated Successfully."}, status=status.HTTP_200_OK
+        )
+
+
+class ForgotPasswordView(APIView):
+    def post(self, request):
+        email = request.data.get("email")
+        try:
+            user = CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
+            return Response(
+                {"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Create a time-limited token (JWT)
+        refresh = RefreshToken.for_user(user)
+        token = str(refresh.access_token)
+
+        # Example reset URL
+        reset_url = (
+            request.build_absolute_uri(reverse("reset-password")) + f"?token={token}"
+        )
+
+        # send email
+        send_mail(
+            subject="Klaribase Password Reset",
+            message=f"Hi {user.username},\n\nClick to reset your password: {reset_url}",
+            from_email="noreply@klaribase.com",
+            recipient_list=[email],
+            fail_silently=False,
+        )
+
+        return Response(
+            {"detail": "Password reset email sent."}, status=status.HTTP_200_OK
+        )
+
+
+class ResetPasswordView(APIView):
+    def post(self, request):
+        token = request.data.get("token")
+        new_password = request.data.get("password")
+
+        try:
+            validated_token = UntypedToken(token)
+            user_id = validated_token["user_id"]
+            user = CustomUser.object.get(id=user_id)
+        except (TokenError, CustomUser.DoesNotExist):
+            return Response(
+                {"detail": "Invalid or expired token"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user.password = make_password(new_password)
+        user.save()
+        return Response(
+            {"detail": "Password has been reset."}, status=status.HTTP_200_OK
         )
