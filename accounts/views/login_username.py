@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken, UntypedToken
 
-from accounts.serializers import LoginSerializer
+from accounts.serializers.serializers import LoginSerializer
 
 
 class LoginView(APIView):

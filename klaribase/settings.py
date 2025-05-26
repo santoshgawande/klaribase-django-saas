@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 import os
+from datetime import timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -32,6 +33,9 @@ DEBUG = os.getenv("DEBUG")
 ALLOWED_HOSTS = []
 
 
+SITE_ID = 1
+REST_USE_JWT = True  # So we get JWT, not sessions
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -46,6 +50,18 @@ INSTALLED_APPS = [
     "accounts",
 ]
 
+INSTALLED_APPS += [
+    "django.contrib.sites",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
+    "rest_framework.authtoken",
+    "dj_rest_auth",
+    "dj_rest_auth.registration",
+]
+
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -54,6 +70,9 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+]
+MIDDLEWARE += [
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = "klaribase.urls"
@@ -140,7 +159,6 @@ REST_FRAMEWORK = {
     ],
 }
 
-from datetime import timedelta
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
@@ -174,12 +192,12 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-## Email Backend for Development
-## This does not send real emails - It just prints them to terminal
-## Use this for testing locally only
+# Email Backend for Development
+# This does not send real emails - It just prints them to terminal
+# Use this for testing locally only
 # EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-## Production Ready SMTP
+# Production Ready SMTP
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
@@ -187,3 +205,17 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")  # App password from Gmail
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
+
+
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "APP": {
+            "client_id": os.getenv("CLIENT_ID"),  # your-google-client-id
+            # 'your-google-client-secret'
+            "secret": os.getenv("CLIENT_SECRET"),
+            "key": "",
+        },
+        "SCOPE": ["profile", "email"],
+        "AUTH_PARAMS": {"access_type": "offline"},
+    }
+}

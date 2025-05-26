@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.tokens import RefreshToken, UntypedToken
 
-from accounts.serializers import UserSerializer
+from accounts.serializers.serializers import UserSerializer
 
 
 class MeView(APIView):
