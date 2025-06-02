@@ -1,4 +1,8 @@
-# klaribase-django-saas  -  Multi-Tenant Platform
+# Klaribase Django SaaS – Multi-Tenant Platform
+
+## Overview
+
+**Klaribase** is a scalable, production-ready multi-tenant SaaS application built with Django. It is designed for knowledge sharing across isolated tenants — similar to Stack Overflow, but with tenant-specific data and user access controls.
 
 
 ## **1. Accounts**
