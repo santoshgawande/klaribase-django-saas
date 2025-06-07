@@ -98,7 +98,8 @@ INSTALLED_APPS = SHARED_APPS + TENANT_APPS
 DATABASE_ROUTERS = ("django_tenants.routers.TenantSyncRouter",)
 
 MIDDLEWARE = [
-    "django_tenants.middleware.main.TenantMainMiddleware",
+    # "django_tenants.middleware.main.TenantMainMiddleware",
+    "tenants.middleware.dev_tenant.DevTenantMiddleware"
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
