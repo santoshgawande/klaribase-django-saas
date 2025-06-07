@@ -39,6 +39,8 @@ REST_USE_JWT = True  # So we get JWT, not sessions
 # Application definition
 
 INSTALLED_APPS = [
+    "django_tenants",  # Must be first
+    "tenants",  # Tenant management
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -48,6 +50,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
     "accounts",
+    "core",
+    "lms",
 ]
 
 INSTALLED_APPS += [
@@ -62,7 +66,39 @@ INSTALLED_APPS += [
 ]
 
 
+TENANT_MODEL = "tenants.Client"  # Custom tenant model
+TENANT_DOMAIN_MODEL = "tenants.Domain"  # Domain routing model
+PUBLIC_SCHEMA_NAME = "public"  # Default public schema name
+
+SHARED_APPS = [
+    "django_tenants",  # Must be first
+    "tenants",  # Shared: tenant model and domain logic
+    "accounts",  # Shared: JWT + OAuth2 auth logic
+    "django.contrib.admin",  # required for admin site
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
+    "rest_framework.authtoken",
+    "dj_rest_auth",
+    "dj_rest_auth.registration",
+]
+
+TENANT_APPS = [
+    "lms",  # Isolated per tenant schema
+]
+
+INSTALLED_APPS = SHARED_APPS + TENANT_APPS
+
+DATABASE_ROUTERS = ("django_tenants.routers.TenantSyncRouter",)
+
 MIDDLEWARE = [
+    "django_tenants.middleware.main.TenantMainMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -88,6 +124,7 @@ TEMPLATES = [
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
+                "django.template.context_processors.request",
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
@@ -114,7 +151,7 @@ WSGI_APPLICATION = "klaribase.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
+        "ENGINE": "django_tenants.postgresql_backend",
         "NAME": os.getenv("DATABASE_NAME"),
         "USER": os.getenv("DATABASE_USER"),
         "PASSWORD": os.getenv("DATABASE_PASSWORD"),
@@ -122,6 +159,7 @@ DATABASES = {
         "PORT": os.getenv("DATABASE_PORT"),
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -155,7 +193,7 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     "DEFAULT_PARSER_CLASSES": [
-        "rest_framework.parsers.JSONParser",  # ← ADD THIS LINE
+        "rest_framework.parsers.JSONParser",
     ],
 }
 
