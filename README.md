@@ -24,7 +24,7 @@ postgres=# \du
  postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS
  san       |
 
-postgres=# CREATE USER klaribase WITH PASSWORD 'klaripass'
+postgres=# CREATE USER klaribase WITH PASSWORD '<DATABASE_PASSWORD from .env>'
 postgres-# ;
 CREATE ROLE
 postgres=# CREATE DATABASE klaribase;
@@ -104,7 +104,7 @@ X-Content-Type-Options: nosniff
 Referrer-Policy: same-origin
 Cross-Origin-Opener-Policy: same-origin
 
-{"refresh":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc0Nzg1NjcxOSwiaWF0IjoxNzQ3NzcwMzE5LCJqdGkiOiI5OWY3MTAyNGVlZjc0YTU3YTg5ODIxZGZlMTdhYzk1OSIsInVzZXJfaWQiOjJ9.SxmDT5pA4_o-2hkE8gsu_QbduNB5XDtJmurMYVlq_ds","access":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ3NzcwNjE5LCJpYXQiOjE3NDc3NzAzMTksImp0aSI6IjcxMjI1Zjc3OTM5YzQ1ZTA5NWY3YWUxYzkwM2NhNzFkIiwidXNlcl9pZCI6Mn0.YfX98ZZH6pCsg-LckyQfqzaiSD9AqSs3VBPjxviC43U"}
+{"refresh":"<refresh_token>","access":"<access_token>"}
 ```
 
 ### Setup Git Hooks with pre-commit
