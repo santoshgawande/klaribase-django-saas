@@ -6,9 +6,14 @@ authors = [
     { name = "Santosh Gawande", email = "gawandesantos@gmail.com" }
 ]
 dependencies = [
-    "Django>=4.2",
-    "djangorestframework",
-    "psycopg2-binary"
+    "Django>=4.2,<5.0",
+    "djangorestframework>=3.16.0",
+    "djangorestframework-simplejwt>=5.5.0",
+    "django-allauth>=0.57.2",
+    "dj-rest-auth>=5.0.2",
+    "django-session-security>=2.6.8",
+    "psycopg2-binary>=2.9.10",
+    "python-dotenv>=1.1.0"
 ]
 
 [tool.setuptools]
