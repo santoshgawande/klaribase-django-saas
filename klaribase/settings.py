@@ -26,11 +26,11 @@ load_dotenv()  # will load .env into os.environ
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = os.getenv("SECRET_KEY", "insecure-dev-secret-key-change-in-production")
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG")
+DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"] if DEBUG else []
 
 
 SITE_ID = 1
@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "session_security",
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
     "accounts",
@@ -68,6 +69,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "session_security.middleware.SessionSecurityMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -84,7 +86,7 @@ AUTH_USER_MODEL = "accounts.CustomUser"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -101,27 +103,29 @@ WSGI_APPLICATION = "klaribase.wsgi.application"
 
 
 # Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("DATABASE_NAME"),
-        "USER": os.getenv("DATABASE_USER"),
-        "PASSWORD": os.getenv("DATABASE_PASSWORD"),
-        "HOST": os.getenv("DATABASE_HOST"),
-        "PORT": os.getenv("DATABASE_PORT"),
+# Supports PostgreSQL for production/staging and SQLite fallback for tests and development.
+if os.getenv("DATABASE_ENGINE") == "django.db.backends.sqlite3" or not os.getenv(
+    "DATABASE_NAME"
+):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3"
+            if os.getenv("DATABASE_NAME") != ":memory:"
+            else ":memory:",
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("DATABASE_NAME"),
+            "USER": os.getenv("DATABASE_USER"),
+            "PASSWORD": os.getenv("DATABASE_PASSWORD"),
+            "HOST": os.getenv("DATABASE_HOST"),
+            "PORT": os.getenv("DATABASE_PORT"),
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -141,12 +145,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# REST_FRAMEWORK = {
-#     'DEFAULT_AUTHENTICATION_CLASSES': (
-#         'rest_framework_simplejwt.authentication.JWTAuthentication',
-#     )
-# }
-
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
@@ -155,7 +153,7 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     "DEFAULT_PARSER_CLASSES": [
-        "rest_framework.parsers.JSONParser",  # ← ADD THIS LINE
+        "rest_framework.parsers.JSONParser",
     ],
 }
 
@@ -166,8 +164,18 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
-    "TOKEN_BLACKLIST_ENABLED": True,  # Not mandatory, but you can include it
+    "TOKEN_BLACKLIST_ENABLED": True,
 }
+
+# Session Security Configuration (django-session-security)
+# Mandatory for django-session-security: expire session when the browser closes.
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+# OWASP Session Management guidance recommends an idle timeout of 15-30 minutes for high-value admin portals.
+# We default to 540 seconds (9 minutes warning) and 600 seconds (10 minutes expiration), overridable via env.
+SESSION_SECURITY_WARN_AFTER = int(os.getenv("SESSION_SECURITY_WARN_AFTER", 540))
+SESSION_SECURITY_EXPIRE_AFTER = int(os.getenv("SESSION_SECURITY_EXPIRE_AFTER", 600))
+SESSION_SECURITY_PASSIVE_URL_NAMES = []
 
 
 # Internationalization
@@ -193,25 +201,19 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Email Backend for Development
-# This does not send real emails - It just prints them to terminal
-# Use this for testing locally only
-# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
-# Production Ready SMTP
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")  # App password from Gmail
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 
 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "APP": {
-            "client_id": os.getenv("CLIENT_ID"),  # your-google-client-id
-            # 'your-google-client-secret'
+            "client_id": os.getenv("CLIENT_ID"),
             "secret": os.getenv("CLIENT_SECRET"),
             "key": "",
         },
